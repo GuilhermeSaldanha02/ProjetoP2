@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Luxo - Admin Login</title>
+    <link rel="shortcut icon" href="images/barco2.png" type="image/x-icon" />
+    <link rel="stylesheet" href="css/default.css" />
+  </head>
+
+  <body>
+    <div class="page">
+      <header>
+        <div id="title">
+          <img src="images/barco1.png" alt="ícone de barco" />
+          <div class="headtitle">
+            <h1>Luxo</h1>
+            <h2>Aluguel de iates</h2>
+          </div>
+        </div>
+        </header>
+
+      <main>
+        <div class="pagtitle">
+          <div class="bgtitle"></div>
+          <h2>Login Administrativo</h2>
+        </div>
+
+        <form id="form-login">
+          <div class="entry">
+            <label for="admin-email">E-mail</label>
+            <input type="email" id="admin-email" required />
+          </div>
+
+          <div class="entry">
+            <label for="admin-senha">Senha</label>
+            <input type="password" id="admin-senha" required />
+          </div>
+
+          <p id="erro-login" style="color: red; text-align: center; display: none;">
+            E-mail e Senha inválidos
+          </p>
+        </form>
+
+        <div class="buttons">
+          <button class="button" id="btn-login">Entrar</button>
+        </div>
+      </main>
+    </div>
+
+    <footer>
+      <p>© 2023 por Luxo aluguel de iates</p>
+    </footer>
+
+    <script src="js/jquery-3.6.4.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script>
+      $(document).ready(function() {
+        // Listener de clique no botão de login
+        $('#btn-login').on('click', function(e) {
+          e.preventDefault();
+          $('#erro-login').hide(); // Esconde qualquer erro anterior
+
+          // 1. Obter valores
+          var emailAdmin = $('#admin-email').val();
+          var senhaAdmin = $('#admin-senha').val();
+
+          // 2. Criar objeto de login (conforme api.js)
+          // (email: admin@admin.com / senha: '1234')
+          var objLoginSenha = {
+            email: emailAdmin,
+            senha: senhaAdmin
+          };
+
+          // 3. Validar usuário
+          var ehValido = false;
+          try {
+            ehValido = validarUsuario(objLoginSenha);
+          } catch (error) {
+            console.error('Erro na API de validação:', error);
+            ehValido = false;
+          }
+
+          // 4. Redirecionar ou mostrar erro
+          if (ehValido) {
+            // Se for válido, redireciona para a futura pág. de mensagens
+            alert('Login com sucesso!');
+            window.location.href = 'mensagens.html';
+          } else {
+            // Se for inválido, mostra a mensagem de erro
+            $('#erro-login').show();
+          }
+        });
+      });
+    </script>
+    </body>
+ </html>
