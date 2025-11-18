@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Luxo - Mensagens</title>
+    <link rel="shortcut icon" href="images/barco2.png" type="image/x-icon" />
+    <link rel="stylesheet" href="css/default.css" />
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      th {
+        background-color: #f2f2f2;
+        text-align: left;
+      }
+      .actions button {
+        margin-right: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div id="title">
+          <img src="images/barco1.png" alt="ícone de barco" />
+          <div class="headtitle">
+            <h1>Luxo</h1>
+            <h2>Aluguel de iates</h2>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <div class="pagtitle">
+          <div class="bgtitle"></div>
+          <h2>Mensagens Recebidas</h2>
+        </div>
+
+        <p>Somente administradores podem acessar esta página.</p>
+
+        <table id="tabela-mensagens">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Mensagem</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </main>
+    </div>
+
+    <footer>
+      <p>© 2023 por Luxo aluguel de iates</p>
+    </footer>
+
+    <script src="js/jquery-3.6.4.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+      $(document).ready(function () {
+        // Proteção de página: requer sessão admin
+        var isAdmin = sessionStorage.getItem('isAdmin');
+        if (isAdmin !== 'true') {
+          alert('Acesso restrito. Faça login como administrador.');
+          window.location.href = 'admin.html';
+          return;
+        }
+
+        // Carregar estados locais (visualizada/excluída)
+        var visualizadas = {};
+        var excluidas = {};
+        try {
+          visualizadas = JSON.parse(localStorage.getItem('mensagensVisualizadas') || '{}') || {};
+          excluidas = JSON.parse(localStorage.getItem('mensagensExcluidas') || '{}') || {};
+        } catch (e) {
+          visualizadas = {};
+          excluidas = {};
+        }
+
+        function salvarEstados() {
+          localStorage.setItem('mensagensVisualizadas', JSON.stringify(visualizadas));
+          localStorage.setItem('mensagensExcluidas', JSON.stringify(excluidas));
+        }
+
+        // Obter mensagens da API
+        var mensagens = [];
+        try {
+          mensagens = obterMensagens() || [];
+        } catch (e) {
+          mensagens = [];
+        }
+
+        var $tbody = $('#tabela-mensagens tbody');
+        $tbody.empty();
+
+        function chaveMensagem(msg) {
+          // Usa id se existir; senão, combina email+mensagem
+          if (msg && (msg.id !== undefined && msg.id !== null)) return String(msg.id);
+          var email = (msg && msg.email) ? msg.email : '';
+          var conteudo = (msg && msg.mensagem) ? msg.mensagem : '';
+          return email + '|' + conteudo;
+        }
+
+        function renderizar() {
+          $tbody.empty();
+          mensagens.forEach(function (msg) {
+            var key = chaveMensagem(msg);
+            if (excluidas[key]) return; // ignorar excluídas
+
+            var nome = msg && msg.nome ? msg.nome : '';
+            var email = msg && msg.email ? msg.email : '';
+            var conteudo = msg && msg.mensagem ? msg.mensagem : '';
+
+            var isViewed = !!visualizadas[key];
+
+            var $tr = $('<tr></tr>').attr('data-key', key);
+            var $tdNome = $('<td></td>').text(nome);
+            var $tdEmail = $('<td></td>').text(email);
+            var $tdMsg = $('<td></td>');
+            var $tdActions = $('<td class="actions"></td>');
+
+            if (isViewed) {
+              $tdMsg.text(conteudo);
+            } else {
+              $tdMsg.html('<strong>' + $('<div>').text(conteudo).html() + '</strong>');
+            }
+
+            var $btnView = $('<button type="button" class="button">Visualizada</button>');
+            var $btnDelete = $('<button type="button" class="button">Excluir</button>');
+
+            $btnView.on('click', function () {
+              if (confirm('Marcar como visualizada?')) {
+                visualizadas[key] = true;
+                salvarEstados();
+                renderizar();
+              }
+            });
+
+            $btnDelete.on('click', function () {
+              if (confirm('Excluir esta mensagem?')) {
+                excluidas[key] = true;
+                salvarEstados();
+                renderizar();
+              }
+            });
+
+            $tdActions.append($btnView, $btnDelete);
+            $tr.append($tdNome, $tdEmail, $tdMsg, $tdActions);
+            $tbody.append($tr);
+          });
+        }
+
+        renderizar();
+      });
+    </script>
+  </body>
+ </html>
