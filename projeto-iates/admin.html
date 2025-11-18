@@ -54,47 +54,53 @@
     </footer>
 
     <script src="js/jquery-3.6.4.min.js"></script>
-    <script src="js/api.js"></script>
+    <script src="js/api.js?v=2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
       $(document).ready(function() {
-        // Limpa o status de admin ao carregar a página de login
         sessionStorage.removeItem('isLogged');
 
-        // Listener de clique no botão de login
         $('#btn-login').on('click', function(e) {
           e.preventDefault();
-          $('#erro-login').hide(); // Esconde qualquer erro anterior
+          $('#erro-login').hide();
 
-          // 1. Obter valores
           var emailAdmin = $('#admin-email').val();
           var senhaAdmin = $('#admin-senha').val();
+          
+          if(!emailAdmin || !senhaAdmin) return;
 
-          // 2. Criar objeto de login (conforme api.js)
-          // (email: admin@admin.com / senha: '1234')
-          var objLoginSenha = {
-            email: emailAdmin,
-            senha: senhaAdmin
+          var objLoginSenha = { 
+            email: emailAdmin, 
+            senha: senhaAdmin 
           };
 
-          // 3. Validar usuário
-          var ehValido = false;
-          try {
-            ehValido = validarUsuario(objLoginSenha);
-          } catch (error) {
-            console.error('Erro na API de validação:', error);
-            ehValido = false;
-          }
+          var $btn = $(this); 
+          $btn.prop('disabled', true).text('Verificando...');
 
-          // 4. Redirecionar ou mostrar erro
-          if (ehValido) {
-            alert('Login com sucesso!');
-            sessionStorage.setItem('isLogged', 'true');
-            window.location.href = 'mensagens.html';
-          } else {
-            // Se for inválido, mostra a mensagem de erro
-            $('#erro-login').show();
-          }
+          validarUsuario(objLoginSenha) 
+            .done(function(ehValido) { 
+                // A API retorna true (booleano) ou "true" (string) 
+                if (ehValido === true || ehValido === "true") { 
+                    Swal.fire({ 
+                        title: 'Bem-vindo!', 
+                        text: 'Login realizado com sucesso.', 
+                        icon: 'success', 
+                        timer: 1500, 
+                        showConfirmButton: false 
+                    }).then(() => { 
+                        sessionStorage.setItem('isLogged', 'true'); 
+                        window.location.href = 'mensagens.html'; 
+                    }); 
+                } else { 
+                    $('#erro-login').show(); 
+                    $btn.prop('disabled', false).text('Entrar'); 
+                } 
+            }) 
+            .fail(function() { 
+                Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error'); 
+                $btn.prop('disabled', false).text('Entrar'); 
+            }); 
         });
       });
     </script>

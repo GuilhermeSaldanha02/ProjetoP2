@@ -64,40 +64,51 @@
       <p>© 2023 por Luxo aluguel de iates</p>
     </footer>
     <script src="js/jquery-3.6.4.min.js"></script>
-    <script src="js/api.js"></script>
+    <script src="js/api.js?v=2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-      // Espera o documento (HTML) carregar completamente
       $(document).ready(function() {
-        // Adiciona um 'ouvinte' de clique ao botão "Enviar"
         $('.button').on('click', function(e) {
-          // 1. Previne o comportamento padrão do formulário
           e.preventDefault();
 
-          // 2. Obtém os valores dos campos do formulário
           var nomePessoa = $('#nome').val();
           var emailPessoa = $('#email').val();
           var msgPessoa = $('#msg').val();
 
-          // 3. Cria o objeto 'mensagem' no formato exigido pela API
+          if(!nomePessoa || !emailPessoa || !msgPessoa) {
+            Swal.fire('Atenção', 'Preencha todos os campos!', 'warning');
+            return;
+          }
+
           var mensagem = {
             nome: nomePessoa,
             email: emailPessoa,
             mensagem: msgPessoa
           };
 
-          // 4. Chama a função inserirMensagem() (do api.js)
-          try {
-            inserirMensagem(mensagem);
+          var $btn = $(this);
+          var textoOriginal = $btn.text();
+          $btn.prop('disabled', true).text('Enviando...');
 
-            // 5. Dá um feedback ao usuário e limpa o formulário
-            alert('Mensagem enviada com sucesso!');
-            $('#nome').val('');
-            $('#email').val('');
-            $('#msg').val('');
-          } catch (error) {
-            console.error('Erro ao enviar mensagem:', error);
-            alert('Ocorreu um erro ao enviar sua mensagem.');
-          }
+          inserirMensagem(mensagem)
+            .done(function(response) {
+              Swal.fire({
+                title: 'Sucesso!',
+                text: 'Sua mensagem foi enviada.',
+                icon: 'success',
+                confirmButtonColor: '#21272b'
+              });
+              $('#nome').val('');
+              $('#email').val('');
+              $('#msg').val('');
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+              Swal.fire('Erro', 'Ocorreu um erro ao enviar sua mensagem.', 'error');
+            })
+            .always(function() {
+              $btn.prop('disabled', false).text(textoOriginal);
+            });
         });
       });
     </script>
