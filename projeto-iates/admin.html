@@ -59,7 +59,7 @@
     <script>
       $(document).ready(function() {
         // Limpa o status de admin ao carregar a página de login
-        sessionStorage.removeItem('isAdmin');
+        sessionStorage.removeItem('isLogged');
 
         // Listener de clique no botão de login
         $('#btn-login').on('click', function(e) {
@@ -88,10 +88,8 @@
 
           // 4. Redirecionar ou mostrar erro
           if (ehValido) {
-            // Se for válido, redireciona para a futura pág. de mensagens
             alert('Login com sucesso!');
-            // Armazena na sessão que o admin está logado
-            sessionStorage.setItem('isAdmin', 'true');
+            sessionStorage.setItem('isLogged', 'true');
             window.location.href = 'mensagens.html';
           } else {
             // Se for inválido, mostra a mensagem de erro

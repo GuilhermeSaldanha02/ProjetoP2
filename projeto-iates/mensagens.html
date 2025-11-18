@@ -68,9 +68,9 @@
     <script src="js/api.js"></script>
     <script>
       $(document).ready(function () {
-        // Proteção de página: requer sessão admin
-        var isAdmin = sessionStorage.getItem('isAdmin');
-        if (isAdmin !== 'true') {
+        // Proteção de página: requer sessão de login
+        var isLogged = sessionStorage.getItem('isLogged');
+        if (isLogged !== 'true') {
           alert('Acesso restrito. Faça login como administrador.');
           window.location.href = 'admin.html';
           return;
